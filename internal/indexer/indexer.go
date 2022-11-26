@@ -6,16 +6,12 @@ import (
 	"path/filepath"
 
 	"github.com/jmelis/dupguard/internal/db"
+	"github.com/jmelis/dupguard/internal/hasher"
 )
-
-func check(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
 
 func indexSize(paths []string) {
 	for _, path := range paths {
+		log.Println("Indexing:", path)
 		db.Prune(path)
 		filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -30,7 +26,7 @@ func indexSize(paths []string) {
 				return nil
 			}
 
-			file := db.File{Path: path, Size: info.Size()}
+			file := &db.File{Path: path, Size: info.Size()}
 			file.Add()
 
 			return nil
@@ -38,11 +34,24 @@ func indexSize(paths []string) {
 	}
 }
 
+// func IndexHash1M() {
+// 	files := db.DupesSize()
+// 	for _, f := range files {
+// 		f.Hash1M = hasher.Hash1M(f.Path)
+// 		f.Add()
+// 	}
+// }
+
+func IndexHash() {
+	files := db.DupesSize()
+	log.Println("Hashing files:", len(files))
+	for _, f := range files {
+		f.Hash = hasher.Hash(f.Path)
+		f.Add()
+	}
+}
+
 func Index(paths []string) {
 	indexSize(paths)
-	// index with size
-
-	// find size dups, index with hash1m
-
-	// find hash1m dups, index with hash
+	IndexHash()
 }

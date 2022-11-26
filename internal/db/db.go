@@ -1,15 +1,12 @@
 package db
 
 import (
-	"fmt"
 	"os"
 	"strings"
 	"time"
 
 	"gorm.io/driver/sqlite" // Sqlite driver based on GGO
 	"gorm.io/gorm"
-
-	"github.com/jmelis/dupguard/internal/hasher"
 )
 
 type File struct {
@@ -18,7 +15,6 @@ type File struct {
 	UpdatedAt time.Time
 	Path      string
 	Size      int64
-	Hash1M    string
 	Hash      string
 }
 
@@ -49,20 +45,16 @@ func Prune(path string) {
 }
 
 func (fp *File) Add() {
-	var filesSameSize []File
 	dgdb.Where("path = ?", fp.Path).Delete(&File{})
-
-	// look for files of the same size
-	dgdb.Where("size = ?", fp.Size).Find(&filesSameSize)
-
-	if len(filesSameSize) > 0 {
-		fmt.Println("found matches for", fp.Path, fp.Size)
-		fp.Hash1M = hasher.Hash1M(fp.Path)
-		for _, f := range filesSameSize {
-			fmt.Println("-", f.Path)
-		}
-		fmt.Println()
-	}
-
 	dgdb.Create(fp)
+}
+
+// DupesSize looks files of the same size and Hash unset
+func DupesSize() []File {
+	sql := `select * from files where
+				size in (select size from files group by size having count(size) > 1)
+				and hash = ''`
+	var files []File
+	dgdb.Raw(sql).Scan(&files)
+	return files
 }
