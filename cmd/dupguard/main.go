@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/jmelis/dupguard/internal/indexer"
+	"github.com/jmelis/dupguard/internal/reporter"
 
 	"github.com/urfave/cli/v2"
 )
@@ -33,7 +34,7 @@ func main() {
 				Name:  "dupes",
 				Usage: "report duplicated files",
 				Action: func(cCtx *cli.Context) error {
-					fmt.Println("dupes")
+					reporter.Dupes()
 					return nil
 				},
 			},

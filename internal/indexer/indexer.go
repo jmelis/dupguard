@@ -15,7 +15,8 @@ func indexSize(paths []string) {
 		db.Prune(path)
 		filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
-				log.Fatalf(err.Error())
+				log.Println(err.Error())
+				return nil
 			}
 
 			if info.IsDir() {
@@ -34,20 +35,16 @@ func indexSize(paths []string) {
 	}
 }
 
-// func IndexHash1M() {
-// 	files := db.DupesSize()
-// 	for _, f := range files {
-// 		f.Hash1M = hasher.Hash1M(f.Path)
-// 		f.Add()
-// 	}
-// }
-
 func IndexHash() {
 	files := db.DupesSize()
 	log.Println("Hashing files:", len(files))
-	for _, f := range files {
+
+	for i, f := range files {
 		f.Hash = hasher.Hash(f.Path)
 		f.Add()
+		if i%10 == 0 {
+			log.Printf("Hashing progress: %d/%d", i, len(files))
+		}
 	}
 }
 

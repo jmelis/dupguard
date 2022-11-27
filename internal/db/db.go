@@ -58,3 +58,22 @@ func DupesSize() []File {
 	dgdb.Raw(sql).Scan(&files)
 	return files
 }
+
+// Dupes looks for duplicated files
+func Dupes() map[string][]File {
+	sql := `select * from files where
+				hash in (select hash from files where hash != '' group by hash having count(hash) > 1)`
+	var files []File
+	dgdb.Raw(sql).Scan(&files)
+
+	filesMap := make(map[string][]File)
+	for _, f := range files {
+		if val, ok := filesMap[f.Hash]; ok {
+			filesMap[f.Hash] = append(val, f)
+		} else {
+			filesMap[f.Hash] = []File{f}
+		}
+	}
+
+	return filesMap
+}
