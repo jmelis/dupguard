@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -26,7 +25,7 @@ func main() {
 				Name:  "check",
 				Usage: "check a path",
 				Action: func(cCtx *cli.Context) error {
-					fmt.Println("check")
+					reporter.Check(cCtx.Args().Slice())
 					return nil
 				},
 			},

@@ -33,7 +33,7 @@ func init() {
 	dglogger := logger.New(
 		log.New(os.Stderr, "", log.LstdFlags),
 		logger.Config{
-			LogLevel: logger.Info,
+			LogLevel: logger.Silent,
 		},
 	)
 
@@ -93,4 +93,10 @@ func Dupes() map[string][]File {
 	}
 
 	return filesMap
+}
+
+func CheckSize(size int64) bool {
+	var file File
+	result := dgdb.Where("size = ?", size).First(&file)
+	return result.RowsAffected == 1
 }
