@@ -1,12 +1,14 @@
 package db
 
 import (
+	"log"
 	"os"
 	"strings"
 	"time"
 
 	"gorm.io/driver/sqlite" // Sqlite driver based on GGO
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type File struct {
@@ -28,7 +30,18 @@ var dgdb *gorm.DB
 
 func init() {
 	var err error
-	dgdb, err = gorm.Open(sqlite.Open("dupguard.db"))
+	dglogger := logger.New(
+		log.New(os.Stderr, "", log.LstdFlags),
+		logger.Config{
+			LogLevel: logger.Info,
+		},
+	)
+
+	dgdb, err = gorm.Open(sqlite.Open("dupguard.db"), &gorm.Config{
+		Logger:          dglogger,
+		CreateBatchSize: 1000,
+	})
+
 	check(err)
 	dgdb.AutoMigrate(&File{})
 }
@@ -47,6 +60,10 @@ func Prune(path string) {
 func (fp *File) Add() {
 	dgdb.Where("path = ?", fp.Path).Delete(&File{})
 	dgdb.Create(fp)
+}
+
+func BatchAdd(files []*File) {
+	dgdb.Create(files)
 }
 
 // DupesSize looks files of the same size and Hash unset
