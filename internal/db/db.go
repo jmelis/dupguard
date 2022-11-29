@@ -28,7 +28,7 @@ func check(err error) {
 
 var dgdb *gorm.DB
 
-func init() {
+func Setup(dbpath string) error {
 	var err error
 	dglogger := logger.New(
 		log.New(os.Stderr, "", log.LstdFlags),
@@ -37,14 +37,18 @@ func init() {
 		},
 	)
 
-	dgdb, err = gorm.Open(sqlite.Open("dupguard.db"), &gorm.Config{
+	dgdb, err = gorm.Open(sqlite.Open(dbpath), &gorm.Config{
 		Logger:          dglogger,
 		CreateBatchSize: 1000,
 	})
 
-	check(err)
-	dgdb.AutoMigrate(&File{})
+	if err != nil {
+		return err
+	}
+
+	return dgdb.AutoMigrate(&File{})
 }
+
 func Prune(path string) {
 	fileInfo, err := os.Stat(path)
 	check(err)

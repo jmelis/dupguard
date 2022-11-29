@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/jmelis/dupguard/internal/db"
 	"github.com/jmelis/dupguard/internal/indexer"
 	"github.com/jmelis/dupguard/internal/reporter"
 
@@ -12,6 +13,19 @@ import (
 
 func main() {
 	app := &cli.App{
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "db",
+				Value:   "./dupguard.db",
+				EnvVars: []string{"DUPGUARD_DB"},
+			},
+		},
+		Before: func(cCtx *cli.Context) error {
+			if err := db.Setup(cCtx.String("db")); err != nil {
+				log.Fatal(err)
+			}
+			return nil
+		},
 		Commands: []*cli.Command{
 			{
 				Name:  "index",
