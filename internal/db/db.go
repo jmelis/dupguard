@@ -100,3 +100,9 @@ func CheckSize(size int64) bool {
 	result := dgdb.Where("size = ?", size).First(&file)
 	return result.RowsAffected == 1
 }
+
+func CheckHash(hash string) bool {
+	var file File
+	result := dgdb.Where("hash = ?", hash).First(&file)
+	return result.RowsAffected == 1
+}

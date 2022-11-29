@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/jmelis/dupguard/internal/db"
+	"github.com/jmelis/dupguard/internal/hasher"
 )
 
 func Dupes() {
@@ -44,9 +45,15 @@ func Check(paths []string) {
 			}
 
 			// check size
-			if db.CheckSize(info.Size()) {
+			if !db.CheckSize(info.Size()) {
+				return nil
+			}
+
+			// check hash
+			if db.CheckHash(hasher.Hash(path)) {
 				fmt.Println(path)
 			}
+
 			return nil
 		})
 	}
